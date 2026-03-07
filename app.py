@@ -75,7 +75,7 @@ if st.button("Generate ECDV"):
         st.code(result, language="text")
 
         st.download_button(
-            label="Copy ECDV Output",
+            label="Download ECDV Output",
             data=result,
             file_name="ecdv_output.txt",
             mime="text/plain"
@@ -102,7 +102,7 @@ if st.button("Generate ECDV"):
         df_csv = excel_safe_df.to_csv(index=False)
 
         st.download_button(
-            label="Copy DataFrame (CSV)",
+            label="Download DataFrame (CSV)",
             data=df_csv,
             file_name="parsed_dataframe.csv",
             mime="text/csv"
@@ -110,4 +110,5 @@ if st.button("Generate ECDV"):
 
     except Exception as e:
         st.error(str(e))
+
 
