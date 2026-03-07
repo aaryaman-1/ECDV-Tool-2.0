@@ -91,7 +91,15 @@ if st.button("Generate ECDV"):
 
         st.dataframe(display_df, use_container_width=True)
 
-        df_csv = display_df.to_csv(index=False)
+        # =========================================
+        # Fix Excel formatting for CSV download
+        # =========================================
+
+        excel_safe_df = display_df.applymap(
+            lambda x: f'="{x}"' if x != "" else ""
+        )
+
+        df_csv = excel_safe_df.to_csv(index=False)
 
         st.download_button(
             label="Copy DataFrame (CSV)",
@@ -102,3 +110,4 @@ if st.button("Generate ECDV"):
 
     except Exception as e:
         st.error(str(e))
+
