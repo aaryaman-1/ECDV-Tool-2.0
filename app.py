@@ -1,5 +1,10 @@
 import streamlit as st
-from ecdv_logic import parse_excel_logical_input, generate_ecdv, parse_ecdv_general
+from ecdv_logic import (
+    parse_excel_logical_input,
+    generate_ecdv,
+    parse_ecdv_general,
+    format_dataframe_for_display
+)
 
 st.set_page_config(page_title="ECDV Automation Tool", layout="centered")
 
@@ -82,9 +87,11 @@ if st.button("Generate ECDV"):
 
         st.subheader("Parsed DataFrame")
 
-        st.dataframe(df, use_container_width=True)
+        display_df = format_dataframe_for_display(df)
 
-        df_csv = df.to_csv(index=False)
+        st.dataframe(display_df, use_container_width=True)
+
+        df_csv = display_df.to_csv(index=False)
 
         st.download_button(
             label="Copy DataFrame (CSV)",
