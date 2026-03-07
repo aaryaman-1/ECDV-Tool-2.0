@@ -2,17 +2,62 @@ import pandas as pd
 from itertools import product
 import re
 
-# NEW IMPORT (for OCM parser)
 from ecdv_parser import parse_ecdv_general
 
+
+# ==================================================
+# NEW FEATURE: FORMAT DATAFRAME FOR DISPLAY
+# ==================================================
+
+def format_cell_for_display(value):
+
+    if isinstance(value, list):
+
+        if len(value) == 0:
+            return ""
+
+        lines = []
+
+        for i, v in enumerate(value):
+
+            if isinstance(v, str) and v.startswith("!"):
+                v = v[1:]
+
+            prefix = "" if i == 0 else "+"
+
+            lines.append(f"{prefix}({v})")
+
+        return "\n".join(lines)
+
+    if pd.isna(value):
+        return ""
+
+    s = str(value)
+
+    if s.startswith("!"):
+        return f"({s[1:]})"
+
+    return s
+
+
+def format_dataframe_for_display(df):
+
+    display_df = df.copy()
+
+    for col in display_df.columns:
+        display_df[col] = display_df[col].apply(format_cell_for_display)
+
+    return display_df
+
+
+# ==================================================
+# ORIGINAL CODE BELOW (UNCHANGED)
+# ==================================================
 
 def generate_ecdv(df, CM, Family):
 
     df = df.copy()
 
-    # ==================================================
-    # VT → CM Mapping
-    # ==================================================
     VT_CM_MAP = {
         'CJ': '09',
         '88': '02',
@@ -43,9 +88,6 @@ def generate_ecdv(df, CM, Family):
         df = df[df['VT'].apply(valid_VT)]
         df = df.drop(columns=['VT'])
 
-    # ==================================================
-    # A → Family[0]
-    # ==================================================
     if 'A' in df.columns:
 
         expected_A = str(Family[0]).zfill(2)
@@ -60,9 +102,6 @@ def generate_ecdv(df, CM, Family):
         df = df[df['A'].apply(valid_A)]
         df = df.drop(columns=['A'])
 
-    # ==================================================
-    # C → Family[2:4]
-    # ==================================================
     if 'C' in df.columns:
 
         expected_C = Family[2:4]
@@ -76,10 +115,6 @@ def generate_ecdv(df, CM, Family):
 
         df = df[df['C'].apply(valid_C)]
         df = df.drop(columns=['C'])
-
-    # ==================================================
-    # B and ZZ → Family[1]
-    # ==================================================
 
     family_second_char = Family[1]
 
@@ -103,18 +138,12 @@ def generate_ecdv(df, CM, Family):
             if col == 'B':
                 df = df.drop(columns=['B'])
 
-    # ==================================================
-    # Normalize Values
-    # ==================================================
     def normalize_value(v):
         s = str(v)
         if s.isdigit() and len(s) == 1:
             return s.zfill(2)
         return s
 
-    # ==================================================
-    # Detect Common Columns
-    # ==================================================
     common_parts = []
     non_common_columns = []
 
@@ -131,9 +160,6 @@ def generate_ecdv(df, CM, Family):
 
         non_common_columns.append(col)
 
-    # ==================================================
-    # Build Permutations
-    # ==================================================
     result = []
 
     for row_index, row in df.iterrows():
