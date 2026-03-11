@@ -217,7 +217,10 @@ def generate_ecdv(df, CM, Family):
         return "No combinations for this product line"
         
     if common_parts and body:
-        return f"{prefix}{'.'.join(common_parts)}<{body}*"
+        if len(result) > 1:   # Only use < when multiple rows/combinations exist
+            return f"{prefix}{'.'.join(common_parts)}<{body}*"
+        else:
+            return f"{prefix}{'.'.join(common_parts)}{body}*"
     elif common_parts and not body:
         return f"{prefix}{'.'.join(common_parts)}*"
     else:
@@ -293,3 +296,4 @@ def parse_excel_logical_input(logical_input: str) -> pd.DataFrame:
     df = pd.DataFrame(final_rows)
 
     return df
+
