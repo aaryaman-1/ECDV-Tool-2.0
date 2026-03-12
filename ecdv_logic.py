@@ -236,12 +236,16 @@ def generate_ecdv(df, CM, Family):
 
     common_str = build_common_string(common_parts)
 
-    prefix = f"{CM}.{Family}."
-
     if not common_parts and not body:
         return "No combinations for this product line"
 
-    if body.startswith("("):
+    # Decide if dot after Family is required
+    if common_parts:
+        first_char = common_str[0]
+    else:
+        first_char = body[0] if body else ""
+
+    if first_char == "(":
         prefix = f"{CM}.{Family}"
     else:
         prefix = f"{CM}.{Family}."
@@ -326,3 +330,4 @@ def parse_excel_logical_input(logical_input: str) -> pd.DataFrame:
     df = pd.DataFrame(final_rows)
 
     return df
+
