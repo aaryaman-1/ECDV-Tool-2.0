@@ -215,6 +215,27 @@ def generate_ecdv(df, CM, Family):
             result.append(formatted)
 
     body = "/".join(result)
+
+    # ==================================================
+    # NEW HELPER FOR COMMON PART FORMATTING
+    # ==================================================
+
+    def build_common_string(parts):
+
+        formatted = ""
+
+        for part in parts:
+            if part.startswith("("):
+                formatted += part
+            else:
+                if formatted and not formatted.endswith(")"):
+                    formatted += "."
+                formatted += part
+
+        return formatted
+
+    common_str = build_common_string(common_parts)
+
     prefix = f"{CM}.{Family}."
 
     if not common_parts and not body:
@@ -227,11 +248,11 @@ def generate_ecdv(df, CM, Family):
 
     if common_parts and body:
         if len(result) > 1:   # Only use < when multiple rows/combinations exist
-            return f"{prefix}{'.'.join(common_parts)}<{body}*"
+            return f"{prefix}{common_str}<{body}*"
         else:
-            return f"{prefix}{'.'.join(common_parts)}{body}*"
+            return f"{prefix}{common_str}{body}*"
     elif common_parts and not body:
-        return f"{prefix}{'.'.join(common_parts)}*"
+        return f"{prefix}{common_str}*"
     else:
         return f"{prefix}{body}*"
 
@@ -305,6 +326,3 @@ def parse_excel_logical_input(logical_input: str) -> pd.DataFrame:
     df = pd.DataFrame(final_rows)
 
     return df
-
-
-
