@@ -154,9 +154,13 @@ def generate_ecdv(df, CM, Family):
             val = column_values[0]
             if not isinstance(val, list):
                 val_str = normalize_value(val)
-                if not val_str.startswith("!"):
+
+                if val_str.startswith("!"):
+                    common_parts.append(f"({col}{val_str[1:]})")
+                else:
                     common_parts.append(f"{col}{val_str}")
-                    continue
+
+                continue
 
         non_common_columns.append(col)
 
@@ -301,5 +305,6 @@ def parse_excel_logical_input(logical_input: str) -> pd.DataFrame:
     df = pd.DataFrame(final_rows)
 
     return df
+
 
 
