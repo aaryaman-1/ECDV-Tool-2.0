@@ -79,8 +79,10 @@ def generate_ecdv(df, CM, Family):
             raise ValueError(f"CM '{CM}' not defined in VT mapping.")
 
         def valid_VT(val):
-            if isinstance(val, list) and len(val) == 0:
-                return True
+            if isinstance(val, list):
+                if len(val) == 0:
+                    return True
+                return False # Safe return to prevent pd.isna crash on lists
             if pd.isna(val):
                 return True
             return str(val).zfill(2) == expected_vt
@@ -93,8 +95,10 @@ def generate_ecdv(df, CM, Family):
         expected_A = str(Family[0]).zfill(2)
 
         def valid_A(val):
-            if isinstance(val, list) and len(val) == 0:
-                return True
+            if isinstance(val, list):
+                if len(val) == 0:
+                    return True
+                return False
             if pd.isna(val):
                 return True
             return str(val).zfill(2) == expected_A
@@ -107,8 +111,10 @@ def generate_ecdv(df, CM, Family):
         expected_C = Family[2:4]
 
         def valid_C(val):
-            if isinstance(val, list) and len(val) == 0:
-                return True
+            if isinstance(val, list):
+                if len(val) == 0:
+                    return True
+                return False
             if pd.isna(val):
                 return True
             return str(val) == expected_C
@@ -127,8 +133,10 @@ def generate_ecdv(df, CM, Family):
         if col in df.columns:
 
             def valid_B(val):
-                if isinstance(val, list) and len(val) == 0:
-                    return True
+                if isinstance(val, list):
+                    if len(val) == 0:
+                        return True
+                    return False
                 if pd.isna(val):
                     return True
                 return str(val).zfill(2) in valid_values
@@ -153,10 +161,11 @@ def generate_ecdv(df, CM, Family):
         # 1. Normalize all cell values into lists of formatted strings
         normalized_rows = []
         for val in column_values:
-            if pd.isna(val):
-                normalized_rows.append([])
-            elif isinstance(val, list):
+            # FIX: Check if it's a list FIRST to prevent the pd.isna() array error
+            if isinstance(val, list):
                 normalized_rows.append([normalize_value(v) for v in val])
+            elif pd.isna(val):
+                normalized_rows.append([])
             else:
                 normalized_rows.append([normalize_value(val)])
 
@@ -362,4 +371,3 @@ def parse_excel_logical_input(logical_input: str) -> pd.DataFrame:
     df = pd.DataFrame(final_rows)
 
     return df
-
