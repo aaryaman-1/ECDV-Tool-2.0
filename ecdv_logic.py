@@ -150,19 +150,51 @@ def generate_ecdv(df, CM, Family):
     for col in df.columns:
         column_values = df[col].tolist()
 
-        if len(set(map(str, column_values))) == 1:
-            val = column_values[0]
-            if not isinstance(val, list):
-                val_str = normalize_value(val)
+        # 1. Normalize all cell values into lists of formatted strings
+        normalized_rows = []
+        for val in column_values:
+            if pd.isna(val):
+                normalized_rows.append([])
+            elif isinstance(val, list):
+                normalized_rows.append([normalize_value(v) for v in val])
+            else:
+                normalized_rows.append([normalize_value(val)])
 
-                if val_str.startswith("!"):
-                    common_parts.append(f"({col}{val_str[1:]})")
+        if not normalized_rows:
+            continue
+
+        # 2. Find the intersection of elements across all rows for this column
+        common_elements = set(normalized_rows[0]).intersection(*[set(r) for r in normalized_rows[1:]])
+
+        if common_elements:
+            # 3. Append found common elements to the prefix (sorted for deterministic output)
+            for el in sorted(list(common_elements)):
+                if el.startswith("!"):
+                    common_parts.append(f"({col}{el[1:]})")
                 else:
-                    common_parts.append(f"{col}{val_str}")
+                    common_parts.append(f"{col}{el}")
 
-                continue
+            # 4. Strip the common elements from the dataframe rows
+            new_col_values = []
+            has_leftovers = False
+            for r in normalized_rows:
+                leftovers = [v for v in r if v not in common_elements]
+                new_col_values.append(leftovers)
+                if leftovers:
+                    has_leftovers = True
+            
+            df[col] = new_col_values
 
-        non_common_columns.append(col)
+            # Only append to non_common_columns if there is remaining row-specific data
+            if has_leftovers:
+                non_common_columns.append(col)
+        else:
+            # 5. Update df with normalized lists to prevent downstream type errors
+            df[col] = normalized_rows
+            
+            # If the column has data but no commonalities, it belongs in the body
+            if any(normalized_rows):
+                non_common_columns.append(col)
 
     result = []
 
