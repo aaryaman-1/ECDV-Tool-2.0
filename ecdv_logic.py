@@ -71,6 +71,7 @@ def generate_ecdv(df, CM, Family):
         'RL': '46',
         'VB': '36',
         'VN': '44',
+        '76': '21'
     }
 
     if 'VT' in df.columns:
