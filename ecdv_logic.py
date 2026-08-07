@@ -51,7 +51,7 @@ def format_dataframe_for_display(df):
 
 
 # ==================================================
-# ORIGINAL CODE BELOW (UNCHANGED)
+# ORIGINAL CODE BELOW (UPDATED WITH EXCLUSION LOGIC)
 # ==================================================
 
 def generate_ecdv(df, CM, Family):
@@ -83,10 +83,19 @@ def generate_ecdv(df, CM, Family):
             if isinstance(val, list):
                 if len(val) == 0:
                     return True
-                return False # Safe return to prevent pd.isna crash on lists
+                for v in val:
+                    s_v = str(v)
+                    if s_v.startswith("!"):
+                        if s_v[1:].zfill(2) == expected_vt: return False
+                    else:
+                        if s_v.zfill(2) != expected_vt: return False
+                return True
             if pd.isna(val):
                 return True
-            return str(val).zfill(2) == expected_vt
+            s = str(val)
+            if s.startswith("!"):
+                return s[1:].zfill(2) != expected_vt
+            return s.zfill(2) == expected_vt
 
         df = df[df['VT'].apply(valid_VT)]
         df = df.drop(columns=['VT'])
@@ -99,10 +108,19 @@ def generate_ecdv(df, CM, Family):
             if isinstance(val, list):
                 if len(val) == 0:
                     return True
-                return False
+                for v in val:
+                    s_v = str(v)
+                    if s_v.startswith("!"):
+                        if s_v[1:].zfill(2) == expected_A: return False
+                    else:
+                        if s_v.zfill(2) != expected_A: return False
+                return True
             if pd.isna(val):
                 return True
-            return str(val).zfill(2) == expected_A
+            s = str(val)
+            if s.startswith("!"):
+                return s[1:].zfill(2) != expected_A
+            return s.zfill(2) == expected_A
 
         df = df[df['A'].apply(valid_A)]
         df = df.drop(columns=['A'])
@@ -115,10 +133,19 @@ def generate_ecdv(df, CM, Family):
             if isinstance(val, list):
                 if len(val) == 0:
                     return True
-                return False
+                for v in val:
+                    s_v = str(v)
+                    if s_v.startswith("!"):
+                        if s_v[1:] == expected_C: return False
+                    else:
+                        if s_v != expected_C: return False
+                return True
             if pd.isna(val):
                 return True
-            return str(val) == expected_C
+            s = str(val)
+            if s.startswith("!"):
+                return s[1:] != expected_C
+            return s == expected_C
 
         df = df[df['C'].apply(valid_C)]
         df = df.drop(columns=['C'])
@@ -137,10 +164,19 @@ def generate_ecdv(df, CM, Family):
                 if isinstance(val, list):
                     if len(val) == 0:
                         return True
-                    return False
+                    for v in val:
+                        s_v = str(v)
+                        if s_v.startswith("!"):
+                            if s_v[1:].zfill(2) in valid_values: return False
+                        else:
+                            if s_v.zfill(2) not in valid_values: return False
+                    return True
                 if pd.isna(val):
                     return True
-                return str(val).zfill(2) in valid_values
+                s = str(val)
+                if s.startswith("!"):
+                    return s[1:].zfill(2) not in valid_values
+                return s.zfill(2) in valid_values
 
             df = df[df[col].apply(valid_B)]
 
